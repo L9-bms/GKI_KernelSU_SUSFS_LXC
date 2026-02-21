@@ -111,6 +111,7 @@ jobs:
         git clone https://github.com/WildKernels/AnyKernel3.git -b "$ANYKERNEL_BRANCH"
         rm -rf AnyKernel3/.git
         git clone https://github.com/WildKernels/kernel_patches.git
+        git -C kernel_patches checkout c5d71df2f59d75180d2d0af7746ddc52905869f9
 
     - name: Initialize and Sync Kernel Source
       working-directory: ${{ env.KERNEL_ROOT }}
