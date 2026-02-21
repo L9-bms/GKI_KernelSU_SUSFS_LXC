@@ -215,6 +215,13 @@ jobs:
         SUSFS_BRANCH="gki-${{ inputs.android_version }}-${{ inputs.kernel_version }}"
         git clone https://gitlab.com/simonpunk/susfs4ksu.git -b "$SUSFS_BRANCH"
 
+        # Pin specific commit for gki-android14-6.1 to avoid patch rejects
+        if [[ "$SUSFS_BRANCH" == "gki-android14-6.1" ]]; then
+          cd susfs4ksu
+          git checkout 5744a57676e20b64701f2209f6390b412a7df9f6
+          cd ..
+        fi
+
         case "${{ inputs.ksu_variant }}" in
           WKSU)
             SUSFS_VERSION="2.0.0"
