@@ -156,6 +156,15 @@ runs:
         if [[ "$SUBLEVEL" -le 75 && "${{ inputs.os_patch_level }}" != "2024-05" ]]; then
           sed -i -e 's/goto show_pad;/return 0;/' ./fs/proc/task_mmu.c
         fi
+        
+        # Fix SUSFS base.c patch reject: the patch expects #include <linux/dma-buf.h>
+        # which doesn't exist in 6.1 kernels, so the include hunk fails to apply
+        if ! grep -q 'susfs_def.h' fs/proc/base.c; then
+          echo "Applying base.c SUSFS include fixup..."
+          sed -i '/#include <linux\/cpufreq_times.h>/a #ifdef CONFIG_KSU_SUSFS_SUS_MAP\n#include <linux\/susfs_def.h>\n#endif' fs/proc/base.c
+          rm -f fs/proc/base.c.rej
+          echo "✓ base.c fixup applied"
+        fi
         echo "✓ Android 14 6.1 fixes applied"
     
     - name: Apply Android 15 6.6 Fixes
