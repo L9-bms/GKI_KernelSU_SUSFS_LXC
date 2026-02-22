@@ -56,14 +56,8 @@ runs:
         cp "${{ inputs.susfs4ksu }}/kernel_patches/fs/"* "${{ inputs.kernel_root }}/common/fs/"
         cp "${{ inputs.susfs4ksu }}/kernel_patches/include/linux/"* "${{ inputs.kernel_root }}/common/include/linux/"
         cp ${{ inputs.susfs4ksu }}/kernel_patches/50_add_susfs_in_gki-${{ inputs.android_version }}-${{ inputs.kernel_version }}.patch ./
-        patch -p1 < 50_add_susfs_in_gki-${{ inputs.android_version }}-${{ inputs.kernel_version }}.patch || true
-        
-        # Check for rejects and report them (fixups are applied in version-specific steps)
-        if find . -name '*.rej' | grep -q .; then
-          echo "⚠ Some patch hunks were rejected (will attempt fixups):"
-          find . -name '*.rej' -print
-        fi
-
+        patch -p1 < 50_add_susfs_in_gki-${{ inputs.android_version }}-${{ inputs.kernel_version }}.patch 
+        #|| true
         echo "✓ Base SUSFS patches applied"
     
     - name: Apply Android 12 5.10 Fixes
@@ -155,15 +149,6 @@ runs:
         
         if [[ "$SUBLEVEL" -le 75 && "${{ inputs.os_patch_level }}" != "2024-05" ]]; then
           sed -i -e 's/goto show_pad;/return 0;/' ./fs/proc/task_mmu.c
-        fi
-        
-        # Fix SUSFS base.c patch reject: the patch expects #include <linux/dma-buf.h>
-        # which doesn't exist in 6.1 kernels, so the include hunk fails to apply
-        if ! grep -q 'susfs_def.h' fs/proc/base.c; then
-          echo "Applying base.c SUSFS include fixup..."
-          sed -i '/#include <linux\/cpufreq_times.h>/a #ifdef CONFIG_KSU_SUSFS_SUS_MAP\n#include <linux\/susfs_def.h>\n#endif' fs/proc/base.c
-          rm -f fs/proc/base.c.rej
-          echo "✓ base.c fixup applied"
         fi
         echo "✓ Android 14 6.1 fixes applied"
     
